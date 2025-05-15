@@ -51,18 +51,9 @@
     
     private async Task Authenticate()
     {
-        // var clains = new List<Claim>
-        // {
-        //     new Claim(ClaimTypes.Name, Model.UserName),
-        //     new Claim(ClaimTypes.Role, "Admin")
-        // };
-        //
-        // var identity = new ClaimsIdentity(clains, CookieAuthenticationDefaults.AuthenticationScheme);
-        // var principal = new ClaimsPrincipal(identity);
-        // await HttpContext.SignInAsync(principal);
         if (!string.IsNullOrWhiteSpace(Model.UserName) && !string.IsNullOrWhiteSpace(Model.Password))
         {
-            AuthProvider.MarkUserAsAuthenticated(Model.UserName);
+            AuthProvider.MarkUserAsAuthenticated("alexsandro");
             navigationManager.NavigateTo("/");
         }
     }

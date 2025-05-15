@@ -5,13 +5,20 @@ namespace BlazorApp.Providers;
 
 public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
-    private ClaimsPrincipal _anonymous = new ClaimsPrincipal(new ClaimsIdentity());
-
-    private ClaimsPrincipal _user;
-
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        return Task.FromResult(new AuthenticationState(_user ?? _anonymous));
+        // Em um cenário real, você pegaria o token JWT de um armazenamento local ou cookie
+        // var jwt = await storage.GetItemAsync("AccessToken");
+
+        // Aqui, você está criando um ClaimsPrincipal manualmente
+        var identity = new ClaimsIdentity();
+
+        identity.AddClaim(new Claim(ClaimTypes.Name, "Alexsandro"));
+        identity.AddClaim(new Claim(ClaimTypes.Role, "Admin"));
+        
+        var user = new ClaimsPrincipal(identity);
+
+        return new AuthenticationState(user);
     }
 
     public void MarkUserAsAuthenticated(string username)
@@ -20,15 +27,19 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         {
             new Claim(ClaimTypes.Name, username),
             new Claim(ClaimTypes.Role, "Admin")
-        }, "apiauth_type");
+        }, "Fake");
 
-        _user = new ClaimsPrincipal(identity);
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_user)));
+        var user = new ClaimsPrincipal(identity);
+        var authState = new AuthenticationState(user);
+
+        NotifyAuthenticationStateChanged(Task.FromResult(authState));
     }
 
     public void MarkUserAsLoggedOut()
     {
-        _user = _anonymous;
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_anonymous)));
+        var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+        var authState = new AuthenticationState(anonymous);
+
+        NotifyAuthenticationStateChanged(Task.FromResult(authState));
     }
 }
