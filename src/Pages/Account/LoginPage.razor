@@ -1,60 +1,62 @@
 ﻿@page "/login"
-@using System.Security.Claims
-@using BlazorApp.Providers
+@using BlazorApp.Model
+@using BlazorApp.Services.Auth
 @using BlazorApp.ViewModel
-@using Microsoft.AspNetCore.Authentication.Cookies
-@using Microsoft.AspNetCore.Authentication
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Components.Forms
 
-@inject NavigationManager navigationManager
-@inject CustomAuthenticationStateProvider AuthProvider
+<h1>Login</h1>
 
-<h3>LoginPage</h3>
-<div class="row">
-    <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
-        <EditForm Model="@Model" OnValidSubmit="Authenticate" FormName="LoginForm">
-            <div class="mb-3 text-center flex-column">
-                <h3>Login</h3>
-            </div>
+@if (ShowErrors)
+{
+    <div class="alert alert-danger" role="alert">
+        <p>@Error</p>
+    </div>
+}
 
-            <div class="mb-3">
-                <label>User Name</label>
-                <InputText @bind-Value="Model.UserName" class="form-control" placeholder="Username"></InputText>
-                <ValidationMessage For="() => Model.UserName" />
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Please enter your details</h5>
+        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <InputText @bind-value="loginModel.Email" Id="email" Class="form-control"  />
+                <ValidationMessage For="@(() => loginModel.Email)" />
             </div>
-            
-            <div class="mb-3">
-                <label>Password</label>
-                <InputText @bind-Value="Model.Password" placeholder="Password" type="password" class="form-control"></InputText>
-                <ValidationMessage For="() => Model.Password" />
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText Id="password" type="password" Class="form-control" @bind-value="loginModel.Password" />
+                <ValidationMessage For="@(() => loginModel.Password)" />
             </div>
-            
-            <div class="mb-3 text-center">
-                <span class="text-danger">@errorMessage</span>
-            </div>
-            
-            <div class="mb-3 d-grid gap-2">
-                <button type="submit" class="btn btn-primary">Login</button>
-            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
         </EditForm>
     </div>
 </div>
 
 @code {
-    [CascadingParameter]
-    public HttpContext? HttpContext { get; set; }
 
-    [SupplyParameterFromForm] 
-    public LoginViewModel Model { get; set; } = new();
+    private LoginModel loginModel = new LoginModel();
+    private bool ShowErrors;
+    private string Error = "";
 
-    private string? errorMessage;
-    
-    private async Task Authenticate()
+    private async Task HandleLogin()
     {
-        if (!string.IsNullOrWhiteSpace(Model.UserName) && !string.IsNullOrWhiteSpace(Model.Password))
+        ShowErrors = false;
+
+        var result = await AuthService.Login(loginModel);
+
+        if (result.Successful)
         {
-            AuthProvider.MarkUserAsAuthenticated("alexsandro");
-            navigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            Error = result.Error;
+            ShowErrors = true;
         }
     }
 }
