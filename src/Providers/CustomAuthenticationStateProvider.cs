@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json;
+using BlazorApp.Helper;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -33,7 +34,7 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
 
-            var claims = ParseClaimsFromJwt(token);
+            var claims = JwtHelper.ParseClaimsFromJwt(token);
             _cachedUser = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
 
             return new AuthenticationState(_cachedUser);
@@ -51,7 +52,7 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         await _localStorage.SetItemAsync("authToken", token);
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
 
-        var claims = ParseClaimsFromJwt(token);
+        var claims = JwtHelper.ParseClaimsFromJwt(token);
         _cachedUser = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
 
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_cachedUser)));
@@ -62,51 +63,10 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         await _localStorage.RemoveItemAsync("authToken");
         _httpClient.DefaultRequestHeaders.Authorization = null;
 
-        _cachedUser = new ClaimsPrincipal(new ClaimsIdentity());
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_cachedUser)));
+        var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
+        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(anonymousUser)));
     }
 
-    private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
-    {
-        var claims = new List<Claim>();
-        var payload = jwt.Split('.')[1];
-        var jsonBytes = ParseBase64WithoutPadding(payload);
-        var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
-
-        if (keyValuePairs.TryGetValue(ClaimTypes.Role, out object roles))
-        {
-            if (roles.ToString().Trim().StartsWith("["))
-            {
-                var parsedRoles = JsonSerializer.Deserialize<string[]>(roles.ToString());
-
-                foreach (var parsedRole in parsedRoles)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, parsedRole));
-                }
-            }
-            else
-            {
-                claims.Add(new Claim(ClaimTypes.Role, roles.ToString()));
-            }
-            keyValuePairs.Remove(ClaimTypes.Role);
-        }
-
-        claims.AddRange(keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString())));
-
-        return claims;
-    }
-
-    private byte[] ParseBase64WithoutPadding(string base64)
-    {
-        switch (base64.Length % 4)
-        {
-            case 2: base64 += "=="; break;
-            case 3: base64 += "="; break;
-        }
-
-        return Convert.FromBase64String(base64);
-    }
-    
     public void SetUser(ClaimsPrincipal user)
     {
         _cachedUser = user;

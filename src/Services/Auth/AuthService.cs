@@ -27,14 +27,14 @@ public class AuthService : IAuthService
         // var loginAsJson = JsonSerializer.Serialize(loginModel);
         // var response = await _httpClient.PostAsync("api/Login",new StringContent(loginAsJson, Encoding.UTF8, "application/json"));
         // var loginResult = JsonSerializer.Deserialize<LoginResult>(await response.Content.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        
         // if (!response.IsSuccessStatusCode)
         // {
         //     return loginResult;
         // }
         
         var loginResult = new LoginResult();
-        loginResult.Token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOlsiQWRtaW4iLCJVc2VyIl0sIm5hbWUiOiJBbGV4c2FuZHJvIiwiZW1haWwiOiJhbGV4QGV4YW1wbGUuY29tIn0.signature";
+        var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm/Do28gU2lsdmEiLCJ1bmlxdWVfbmFtZSI6ImpzLnNpbHZhIiwic3ViIjoiMTIzNDU2Iiwicm9sZSI6WyJBZG1pbiIsIlVzZXIiXSwiY3VzdG9tX2NsYWltIjoidmFsb3IiLCJleHAiOjE5NTE4NDgwMDB9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+        loginResult.Token = token;
         loginResult.Successful = true;
         
         await _localStorage.SetItemAsync("authToken", loginResult.Token);
