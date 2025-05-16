@@ -1,0 +1,24 @@
+@using BlazorApp.Providers
+@using Microsoft.AspNetCore.Components.Authorization
+@inject CustomAuthenticationStateProvider AuthStateProvider
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    private bool _triedLoad = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_triedLoad)
+        {
+            _triedLoad = true;
+
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+            if (!authState.User.Identity.IsAuthenticated)
+            {
+                AuthStateProvider.ForceNotifyStateChanged();
+                StateHasChanged();
+            }
+        }
+    }
+}

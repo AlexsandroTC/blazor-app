@@ -34,21 +34,22 @@ public class AuthService : IAuthService
         // }
         
         var loginResult = new LoginResult();
-        loginResult.Token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOlsiQWRtaW4iLCJVc2VyIl0sIm5hbWUiOiJBbGV4c2FuZHJvIiwiZW1haWwiOiJhbGV4QGV4YW1wbGUuY29tIn0.signature\n";
+        loginResult.Token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOlsiQWRtaW4iLCJVc2VyIl0sIm5hbWUiOiJBbGV4c2FuZHJvIiwiZW1haWwiOiJhbGV4QGV4YW1wbGUuY29tIn0.signature";
         loginResult.Successful = true;
         
         await _localStorage.SetItemAsync("authToken", loginResult.Token);
-
-        ((CustomAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(loginModel.Email);
-
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", loginResult.Token);
+        Console.WriteLine($"[DEBUG] Token before header: '{loginResult.Token}'");
+        
+        await ((CustomAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(loginResult.Token);
+        
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", loginResult.Token?.Trim().Replace("\n", "").Replace("\r", ""));
         return loginResult;
     }
 
     public async Task Logout()
     {
         await _localStorage.RemoveItemAsync("authToken");
-        ((CustomAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsLoggedOut();
+        await ((CustomAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsLoggedOut();
         _httpClient.DefaultRequestHeaders.Authorization = null;
     }
 
