@@ -1,6 +1,4 @@
 using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 using BlazorApp.Model;
 using BlazorApp.Providers;
 using Blazored.LocalStorage;
@@ -58,5 +56,11 @@ public class AuthService : IAuthService
         var messageResult = await _httpClient.PostAsJsonAsync("api/account", registerModel);
         var result = await messageResult.Content.ReadFromJsonAsync<RegisterResult>();
         return result;
+    }
+
+    public async Task<AuthenticationState> GetAuthenticationStateAsync()
+    {
+        var auth = await _authenticationStateProvider.GetAuthenticationStateAsync();
+        return auth;
     }
 }

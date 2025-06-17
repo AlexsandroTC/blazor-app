@@ -1,7 +1,6 @@
-﻿@page "/login"
+﻿@page "/"
 @using BlazorApp.Model
 @using BlazorApp.Services.Auth
-@using BlazorApp.ViewModel
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Components.Forms
@@ -43,6 +42,16 @@
     private bool ShowErrors;
     private string Error = "";
 
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthService.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            NavigationManager.NavigateTo("/home", true);
+        }
+    }
+    
     private async Task HandleLogin()
     {
         ShowErrors = false;
@@ -51,7 +60,7 @@
 
         if (result.Successful)
         {
-            NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo("/Home");
         }
         else
         {
