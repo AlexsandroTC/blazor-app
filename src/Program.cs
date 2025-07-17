@@ -1,5 +1,5 @@
 using System.Text;
-using BlazorApp.Components;
+using BlazorApp;
 using BlazorApp.Providers;
 using BlazorApp.Services.Auth;
 using Blazored.LocalStorage;
@@ -55,7 +55,5 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
-
 
 app.Run();
